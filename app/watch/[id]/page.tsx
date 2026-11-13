@@ -72,7 +72,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
     const sql = getDb();
     const found = await sql`SELECT id,title,description,embed_url,source_url,thumbnail_url,year,type,provider,provider_file_code,status FROM videos WHERE id=${id} AND status='published' LIMIT 1`;
     video = found[0] || null;
-    if (video && video.provider === "vidhold" && !text(video.embed_url, video.source_url) && video.provider_file_code) {
+    if (video && video.provider === "vidhold" && !safeUrl(text(video.embed_url, video.source_url)) && video.provider_file_code) {
       const resolved = await resolveVidHoldPlayback(String(video.provider_file_code));
       if (resolved) {
         video.embed_url = resolved;
