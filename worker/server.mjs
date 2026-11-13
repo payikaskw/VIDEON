@@ -37,7 +37,7 @@ app.post("/upload",upload.single("file"),async(req,res)=>{
   const form=new FormData();
   form.append("api_key",apiKey);
   form.append("file",fs.createReadStream(tempPath),{filename:req.file.originalname,contentType:req.file.mimetype||"application/octet-stream"});
-  const uploadResponse=await fetch(target,{method:"POST",body:form,headers:form.getHeaders(),signal:AbortSignal.timeout(1000*60*60)});
+  const uploadResponse=await fetch(target,{method:"POST",body:form,headers:form.getHeaders(),duplex:"half",signal:AbortSignal.timeout(1000*60*60)});
   const data=await uploadResponse.json();
   if(!uploadResponse.ok||data.status!==200)throw new Error(data.msg||"Upload ke DoodStream gagal.");
   const item=Array.isArray(data.result)?data.result[0]:data.result;
