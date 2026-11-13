@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS videos (
  thumbnail_url TEXT,
  year SMALLINT,
  duration_seconds INTEGER,
- provider VARCHAR(30) NOT NULL DEFAULT 'vidhold',
+ provider VARCHAR(30) NOT NULL DEFAULT 'doodstream',
  provider_file_code VARCHAR(100),
  embed_url TEXT,
  source_url TEXT,
@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS site_settings (
 
 CREATE TABLE IF NOT EXISTS upload_jobs (
  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
- provider VARCHAR(30) NOT NULL DEFAULT 'vidhold',
+ provider VARCHAR(30) NOT NULL DEFAULT 'doodstream',
  file_code VARCHAR(100) UNIQUE NOT NULL,
  source_url TEXT,
  title VARCHAR(180) NOT NULL,
