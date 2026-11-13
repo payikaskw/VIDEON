@@ -14,10 +14,10 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
    playerUrl=getDoodEmbed(String(video.provider_file_code));playbackType="embed";
    if(video.embed_url!==playerUrl)await sql`UPDATE videos SET embed_url=${playerUrl},updated_at=NOW() WHERE id=${id} AND status='published'`;
   }else if(video?.provider==="vidhold"&&video.provider_file_code){
-   const resolved=await vidholdResolvePlayback(String(video.provider_file_code));const stored=typeof video.embed_url==="string"&&video.embed_url!==video.source_url?video.embed_url:"";playerUrl=resolved.url||stored;playbackType=vidholdPlaybackType(playerUrl);
+   const resolved=await vidholdResolvePlayback(String(video.provider_file_code));const stored=typeof video.embed_url==="string"&&video.embed_url!==video.source_url?video.embed_url:"";playerUrl=resolved.url||stored;const resolvedType=vidholdPlaybackType(playerUrl);playbackType=resolvedType==="unavailable"?"embed":resolvedType;
    if(playerUrl){video.embed_url=playerUrl;await sql`UPDATE videos SET embed_url=${playerUrl},updated_at=NOW() WHERE id=${id} AND status='published'`;}
    else{video.embed_url=null;await sql`UPDATE videos SET status='processing',embed_url=NULL,published_at=NULL,updated_at=NOW() WHERE id=${id} AND status='published'`;}
-  }else{playerUrl=typeof video?.embed_url==="string"?video.embed_url:"";playbackType=vidholdPlaybackType(playerUrl);}
+  }else{playerUrl=typeof video?.embed_url==="string"?video.embed_url:"";const resolvedType=vidholdPlaybackType(playerUrl);playbackType=resolvedType==="unavailable"?"embed":resolvedType;}
  }catch(error){console.error("[watch]",error);loadError=true;}
  if(loadError)return <main className="content" style={{minHeight:"100vh",paddingTop:32}}><Link href="/" className="muted">← Kembali ke VIRALINDO</Link><h1>Video belum dapat dimuat</h1><p className="muted">Koneksi database atau layanan pemutar sedang bermasalah. Silakan coba lagi.</p></main>;
  if(!video)return <main className="content" style={{minHeight:"100vh",paddingTop:32}}><Link href="/" className="muted">← Kembali ke VIRALINDO</Link><h1>Video tidak ditemukan</h1><p className="muted">Video ini belum dipublikasikan atau sudah tidak tersedia.</p></main>;
