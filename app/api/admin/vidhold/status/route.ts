@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/auth";
 import { getDb } from "@/lib/db";
-import { vidholdDirectLink, vidholdFileInfo, vidholdFileList, validFileCode } from "@/lib/vidhold";
+import { vidholdFileInfo, vidholdFileList, validFileCode } from "@/lib/vidhold";
 
 export const runtime = "nodejs";
 const schema = z.object({ fileCode: z.string().min(4).max(80) });
@@ -40,11 +40,11 @@ function firstPlayerUrl(...values: unknown[]): string | null {
   return null;
 }
 function getUrl(file: RecordValue): string | null {
-  const direct = firstPlayerUrl(file.embed_url, file.embed, file.player_url, file.player, file.link, file.file_url, file.view_url, file.url);
+  const direct = firstPlayerUrl(file.embed_url, file.embed, file.player_url, file.player, file.link, file.file_url, file.view_url, file.url, file.download_url);
   if (direct) return direct;
   for (const key of ["result", "data", "file", "info"]) {
     const nested = asRecord(file[key]);
-    const found = firstPlayerUrl(nested.embed_url, nested.embed, nested.player_url, nested.player, nested.link, nested.file_url, nested.view_url, nested.url);
+    const found = firstPlayerUrl(nested.embed_url, nested.embed, nested.player_url, nested.player, nested.link, nested.file_url, nested.view_url, nested.url, nested.download_url);
     if (found) return found;
   }
   return null;
@@ -76,19 +76,15 @@ export async function POST(req: Request) {
       }
     }
 
-    let directResult: RecordValue = {};
-    let directLinkError: string | null = null;
-    try { directResult = asRecord((await vidholdDirectLink(fileCode)).result); } catch (error) { directLinkError = error instanceof Error ? error.message : "Direct link API gagal"; console.error("[vidhold/direct-link]", directLinkError); }
-    const versions = Array.isArray(directResult.versions) ? directResult.versions.map(asRecord) : [];
-    const directMp4 = firstPlayerUrl(...versions.filter(v => ["h", "n", "l", "o"].includes(String(v.name || ""))).map(v => v.url));
-    const hlsUrl = firstPlayerUrl(directResult.hls_direct);
+    const directResult: RecordValue = {};
+    const directLinkError: string | null = null;
     const rawStatus = statusOf(file);
     const canPlay = [1, "1", true, "true"].includes(file.canplay as never) ||
       [1, "1", true, "true"].includes(file.can_play as never);
     const ready = canPlay || ["ready", "active", "complete", "completed", "ok", "success", "published"].includes(rawStatus);
     const failed = ["failed", "error", "deleted", "removed"].includes(rawStatus);
     const status = ready ? "published" : failed ? "failed" : "processing";
-    const playerUrl = directMp4 || hlsUrl || getUrl(file);
+    const playerUrl = getUrl(file);
     const sql = getDb();
 
     await sql`
@@ -108,13 +104,13 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       ok: true, fileCode, status, providerStatus: rawStatus || "unknown",
-      playerReady: Boolean(playerUrl), directLinkFound: Boolean(directMp4 || hlsUrl), playbackType: directMp4 ? "mp4" : hlsUrl ? "hls" : "share-page", foundInFileList: listMatched,
+      playerReady: Boolean(playerUrl), directLinkFound: false, playbackType: playerUrl ? (String(playerUrl).match(/\\.(mp4|webm|ogg)(\\?|$)/i) ? "mp4" : "embed-or-download") : "unavailable", foundInFileList: listMatched,
       infoFields: Object.keys(file).slice(0, 30),
       directLinkFields: Object.keys(directResult).slice(0, 30),
       directLinkError,
       hasHls: Boolean(hlsUrl),
       versionCount: versions.length,
-      message: playerUrl ? "Alamat player ditemukan." : directLinkError || "API VidHold merespons tanpa URL streaming. Periksa dukungan direct_link dan status encoding pada akun VidHold."
+      message: playerUrl ? "Alamat pemutar ditemukan dari file/info atau file/list." : "VidHold mengembalikan field file tetapi tidak memberikan URL HTTP/HTTPS yang bisa dipakai. Periksa nilai embed_url dan download_url pada akun VidHold."
     });
   } catch (error) {
     console.error("[vidhold/status]", error);
