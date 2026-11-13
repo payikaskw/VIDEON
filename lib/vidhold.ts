@@ -45,13 +45,13 @@ export function validatePublicVideoUrl(value: string) {
 async function request<T>(path: string, params: Record<string, string>, method: "GET" | "POST" = "GET") {
   const url = new URL(`${BASE_URL}/${path.replace(/^\/+/, "")}`);
   const key = getKey();
-  const options: RequestInit = { method, cache: "no-store", signal: AbortSignal.timeout(25_000), headers: { Accept: "application/json" } };
+  const headers: Record<string, string> = { Accept: "application/json" };\n  const options: RequestInit = { method, cache: "no-store", signal: AbortSignal.timeout(25_000), headers };
   if (method === "GET") {
     url.searchParams.set("key", key);
     for (const [name, value] of Object.entries(params)) url.searchParams.set(name, value);
   } else {
     const body = new URLSearchParams({ key, ...params });
-    options.headers = { ...options.headers, "Content-Type": "application/x-www-form-urlencoded" };
+    headers["Content-Type"] = "application/x-www-form-urlencoded";
     options.body = body.toString();
   }
   const response = await fetch(url, options);
