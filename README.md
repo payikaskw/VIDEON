@@ -5,25 +5,28 @@ Streaming catalogue for films, series and general video. Public viewers do not n
 ## Stack
 - Next.js App Router + TypeScript
 - Neon PostgreSQL
-- Vidhold remote URL import API
+- VidHold API catalog synchronization
 - Vercel deployment
 
-## Local setup
-1. Install Node.js 20+.
-2. Run `npm install`.
-3. Copy `.env.example` to `.env.local` and fill the secrets.
-4. Run `db/schema.sql` in the Neon SQL Editor.
-5. Generate an admin password hash: `node scripts/hash-password.mjs 'your-long-password'`.
-6. Set `ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH`, and a random `ADMIN_JWT_SECRET` (32+ chars).
-7. Run `npm run dev`.
+## Environment variables
+- `DATABASE_URL`: Neon PostgreSQL connection string.
+- `VIDHOLD_API_KEY`: VidHold API key (server-side only).
+- `ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH`, `ADMIN_JWT_SECRET`: admin authentication.
+- `CRON_SECRET`: random secret used to authorize the scheduled catalog sync endpoint.
 
-## Vidhold URL import
-Set `VIDHOLD_API_KEY` in Vercel Environment Variables. Keep the key server-side only; never expose it in browser code. VIDEON imports videos from public HTTPS URLs through Vidhold's `/api/upload/url` endpoint. The returned file code is stored in Neon while Vidhold processes the import in the background. VIDEON does not accept local file uploads.
+## Database
+For an existing deployment, run `db/migrations/002_vidhold_auto_catalog.sql` once in the Neon SQL Editor. For a fresh database, run `db/schema.sql` followed by the migration.
 
-Official docs: https://vidhold.com/api-docs
+## VidHold automatic catalog
+Upload videos in the VidHold account as usual. VIDEON reads the account catalog through VidHold `/api/file/list`, stores new file codes and metadata in Neon, and checks processing status through `/api/file/info`. The admin dashboard also syncs automatically while it is open and offers a manual sync action. The Vercel scheduled job is configured in `vercel.json`; its frequency depends on the Vercel plan. On Vercel Hobby, scheduled jobs can run only once per day, while an open admin dashboard checks every minute.
+
+The admin dashboard does not provide local video upload or URL-import forms. Admin actions only hide, restore, or remove entries from the VIDEON catalog. Removing an entry from VIDEON does not delete the original VidHold file.
+
+## Admin UI settings
+The admin settings page controls brand name, tagline, homepage hero text, catalogue title, categories, footer text, and accent color. Settings are stored in Neon.
 
 ## Deploy
-Import this repository into Vercel, add the environment variables, run the SQL schema in Neon, then deploy.
+Import this repository into Vercel and configure the environment variables above. Run the database migration in Neon, then deploy.
 
 ## Important
-Only publish videos you own or are authorized to distribute. Vidhold processing and player availability depend on the provider's current API and account limits.
+Only publish videos you own or are authorized to distribute. VidHold processing and player availability depend on the provider's current API and account limits.
