@@ -19,5 +19,5 @@ export async function PUT(req:Request){
   for(let i=0;i<data.categories.length;i++){const name=data.categories[i].trim();const slug=slugs[i];if(name&&slug)await sql`INSERT INTO categories(name,slug) VALUES(${name},${slug}) ON CONFLICT(slug) DO UPDATE SET name=EXCLUDED.name`;}
   await sql`DELETE FROM categories WHERE NOT (slug = ANY(${slugs}::text[]))`;
   return NextResponse.json({ok:true,settings:data});
- } catch{return NextResponse.json({error:"Gagal menyimpan pengaturan."},{status:500});}
+ } catch(error){ console.error("[admin/settings] Gagal menyimpan:", error); const detail=error instanceof Error ? error.message : "Unknown database error"; return NextResponse.json({error:"Gagal menyimpan pengaturan.",detail},{status:500});}
 }
