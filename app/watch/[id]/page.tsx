@@ -9,6 +9,13 @@ function text(...values: unknown[]): string | null {
   for (const v of values) if (typeof v === "string" && v.trim()) return v.trim();
   return null;
 }
+function firstSafeUrl(...values: unknown[]): string {
+  for (const value of values) {
+    const candidate = safeUrl(value);
+    if (candidate) return candidate;
+  }
+  return "";
+}
 function rows(v: unknown): Rec[] {
   if (Array.isArray(v)) return v.map(rec);
   const o = rec(v);
@@ -27,12 +34,12 @@ function safeUrl(value: unknown): string {
   } catch { return ""; }
 }
 function fileUrl(file: Rec): string {
-  const direct = text(file.embed_url, file.embed, file.player_url, file.player, file.link, file.file_url, file.view_url, file.url);
-  if (direct) return safeUrl(direct);
+  const direct = firstSafeUrl(file.embed_url, file.embed, file.player_url, file.player, file.link, file.file_url, file.view_url, file.url);
+  if (direct) return direct;
   for (const key of ["result", "data", "file", "info"]) {
     const nested = rec(file[key]);
-    const found = text(nested.embed_url, nested.embed, nested.player_url, nested.player, nested.link, nested.file_url, nested.view_url, nested.url);
-    if (found) return safeUrl(found);
+    const found = firstSafeUrl(nested.embed_url, nested.embed, nested.player_url, nested.player, nested.link, nested.file_url, nested.view_url, nested.url);
+    if (found) return found;
   }
   return "";
 }
@@ -72,7 +79,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
     const sql = getDb();
     const found = await sql`SELECT id,title,description,embed_url,source_url,thumbnail_url,year,type,provider,provider_file_code,status FROM videos WHERE id=${id} AND status='published' LIMIT 1`;
     video = found[0] || null;
-    if (video && video.provider === "vidhold" && !safeUrl(text(video.embed_url, video.source_url)) && video.provider_file_code) {
+    if (video && video.provider === "vidhold" && !firstSafeUrl(video.embed_url, video.source_url) && video.provider_file_code) {
       const resolved = await resolveVidHoldPlayback(String(video.provider_file_code));
       if (resolved) {
         video.embed_url = resolved;
@@ -90,8 +97,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
     return <main className="content" style={{ minHeight: "100vh", paddingTop: 32 }}><Link href="/" className="muted">← Kembali ke VIRALINDO</Link><h1>Video tidak ditemukan</h1><p className="muted">Video ini belum dipublikasikan atau sudah tidak tersedia.</p></main>;
   }
 
-  const rawPlayerUrl = text(video.embed_url, video.source_url) || "";
-  const playerUrl = safeUrl(rawPlayerUrl);
+  const playerUrl = firstSafeUrl(video.embed_url, video.source_url);
   const isMediaFile = /\.(mp4|webm|ogg)(\?|$)/i.test(playerUrl);
   const isHls = /\.m3u8(\?|$)/i.test(playerUrl);
 
