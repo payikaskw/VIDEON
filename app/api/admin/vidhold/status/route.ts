@@ -76,8 +76,6 @@ export async function POST(req: Request) {
       }
     }
 
-    const directResult: RecordValue = {};
-    const directLinkError: string | null = null;
     const rawStatus = statusOf(file);
     const canPlay = [1, "1", true, "true"].includes(file.canplay as never) ||
       [1, "1", true, "true"].includes(file.can_play as never);
@@ -104,12 +102,12 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       ok: true, fileCode, status, providerStatus: rawStatus || "unknown",
-      playerReady: Boolean(playerUrl), directLinkFound: false, playbackType: playerUrl ? (String(playerUrl).match(/\\.(mp4|webm|ogg)(\\?|$)/i) ? "mp4" : "embed-or-download") : "unavailable", foundInFileList: listMatched,
+      playerReady: Boolean(playerUrl), directLinkFound: false, playbackType: playerUrl ? (/\\.(mp4|webm|ogg)(\\?|$)/i.test(playerUrl) ? "mp4" : "embed-or-download") : "unavailable", foundInFileList: listMatched,
       infoFields: Object.keys(file).slice(0, 30),
-      directLinkFields: Object.keys(directResult).slice(0, 30),
-      directLinkError,
-      hasHls: Boolean(hlsUrl),
-      versionCount: versions.length,
+      directLinkFields: [],
+      directLinkError: null,
+      hasHls: /\\.m3u8(\\?|$)/i.test(playerUrl || ""),
+      versionCount: 0,
       message: playerUrl ? "Alamat pemutar ditemukan dari file/info atau file/list." : "VidHold mengembalikan field file tetapi tidak memberikan URL HTTP/HTTPS yang bisa dipakai. Periksa nilai embed_url dan download_url pada akun VidHold."
     });
   } catch (error) {
