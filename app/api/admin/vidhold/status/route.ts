@@ -72,7 +72,7 @@ export async function POST(req: Request) {
     await sql`
       UPDATE videos SET
         status=${status},
-        embed_url=COALESCE(${playerUrl}, embed_url),
+        embed_url=COALESCE(${playerUrl}, source_url, embed_url),
         published_at=CASE WHEN ${ready} THEN COALESCE(published_at,NOW()) ELSE published_at END,
         updated_at=NOW()
       WHERE provider='vidhold' AND provider_file_code=${fileCode}
