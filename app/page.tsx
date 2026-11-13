@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { Play, Search, Film, Clapperboard } from "lucide-react";
 type Video={id:string;title:string;description:string|null;thumbnail_url:string|null;category_name:string|null;year:number|null;type:string};
 type SiteSettings={brandName?:string;tagline?:string;heroEyebrow?:string;heroTitle?:string;heroDescription?:string;sectionTitle?:string;categories?:string[];footerText?:string;accent?:string};
@@ -10,7 +11,7 @@ export default function HomePage(){
  const filtered=videos.filter(v=>(category==="Semua"||v.type?.toLowerCase()===category.toLowerCase()||v.category_name?.toLowerCase()===category.toLowerCase())&&v.title.toLowerCase().includes(query.toLowerCase()));
  const tapCount=useRef(0);const tapTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
  function logoTap(){tapCount.current++;if(tapTimer.current)clearTimeout(tapTimer.current);tapTimer.current=setTimeout(()=>{tapCount.current=0},1200);if(tapCount.current>=6){tapCount.current=0;window.location.href="/admin";}}
- return <main>
+ return <main style={{"--red":site.accent} as CSSProperties}>
  <header className="site-header"><button className="brand" onClick={logoTap} aria-label={site.brandName}><span className="brand-mark"><Play size={17} fill="white"/></span>{site.brandName}</button><div className="header-note">{site.tagline}</div><a href="#koleksi" aria-label="Lihat koleksi"><Search size={20}/></a></header>
  <section className="hero"><div className="hero-content"><div className="eyebrow">{site.heroEyebrow}</div><h1>{site.heroTitle.split(" ").length>2?site.heroTitle:<>{site.heroTitle}</>}</h1><p>{site.heroDescription}</p><a className="primary-btn" href="#koleksi"><Play size={17} fill="white"/>Jelajahi video</a><a className="secondary-btn" href="#koleksi"><Clapperboard size={17}/>Lihat koleksi</a></div></section>
  <section className="content" id="koleksi"><div className="section-head"><div><div className="eyebrow">Discover</div><h2>{site.sectionTitle}</h2></div><span className="muted">{videos.length} video</span></div>
