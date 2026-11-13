@@ -1,4 +1,4 @@
--- VIDEON initial schema — Neon PostgreSQL
+-- VIRALINDO initial schema — Neon PostgreSQL
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE IF NOT EXISTS admins (
@@ -101,6 +101,6 @@ INSERT INTO categories(name,slug) VALUES
 ON CONFLICT (slug) DO NOTHING;
 
 INSERT INTO site_settings(key,value) VALUES
- ('brand', '{"name":"VIDEON","tagline":"WATCH EVERYTHING. ANYTIME."}'::jsonb),
+ ('brand', '{"name":"VIRALINDO","tagline":"WATCH EVERYTHING. ANYTIME."}'::jsonb),
  ('appearance', '{"accent":"#e11d48","theme":"dark"}'::jsonb)
 ON CONFLICT (key) DO NOTHING;
