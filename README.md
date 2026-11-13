@@ -18,7 +18,7 @@ Streaming catalogue for films, series and general video. Public viewers do not n
 7. Run `npm run dev`.
 
 ## DoodStream
-Set `DOODSTREAM_API_KEY` in Vercel Environment Variables. The API key must never be exposed in browser code. The current integration supports account info and remote URL upload. Local large-file uploads require a separate streaming worker so files do not pass through Vercel request-body limits.
+Set `DOODSTREAM_API_KEY` in Vercel Environment Variables. The API key must never be exposed in browser code. Remote URL upload runs through the VIDEON backend. Local file uploads use the separate service in `worker/`; deploy it and set `VIDEO_WORKER_URL` and the same `UPLOAD_WORKER_SECRET` in Vercel and the worker. The worker streams the file to DoodStream without routing large files through Vercel.
 
 Official docs: https://doodstream.com/api-docs
 
