@@ -1,0 +1,8 @@
+{
+  "name":"videon-doodstream-upload-worker",
+  "version":"1.0.0",
+  "private":true,
+  "type":"module",
+  "scripts":{"start":"node server.mjs"},
+  "dependencies":{"express":"^5.1.0","form-data":"^4.0.4","jose":"^6.1.0","multer":"^2.0.2"}
+}
