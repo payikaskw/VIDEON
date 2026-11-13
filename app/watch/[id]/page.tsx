@@ -40,7 +40,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
       <div style={{ maxWidth: 1100, margin: "24px auto" }}>
         {playerUrl ? (
           <div style={{ aspectRatio: "16/9", background: "#000", borderRadius: 14, overflow: "hidden" }}>
-            { /\\.(mp4|webm|ogg)(\\?|$)/i.test(playerUrl) ? <video src={playerUrl} controls playsInline preload="metadata" poster={video.thumbnail_url || undefined} style={{ width: "100%", height: "100%" }} /> : <iframe src={playerUrl} title={video.title} allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowFullScreen referrerPolicy="origin" style={{ width: "100%", height: "100%", border: 0 }} /> }
+            { /\.(mp4|webm|ogg)(\?|$)/i.test(playerUrl) ? <video src={playerUrl} controls playsInline preload="metadata" poster={video.thumbnail_url || undefined} style={{ width: "100%", height: "100%" }} /> : <iframe src={playerUrl} title={video.title} allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowFullScreen referrerPolicy="origin" style={{ width: "100%", height: "100%", border: 0 }} /> }
           </div>
         ) : (
           <div style={{ aspectRatio: "16/9", background: "#111116", border: "1px solid #303038", borderRadius: 14, display: "grid", placeItems: "center", padding: 24, textAlign: "center" }}>
