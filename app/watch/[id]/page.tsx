@@ -14,7 +14,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
   if(video?.provider_file_code){
    playerUrl=getDoodEmbed(String(video.provider_file_code));
    if(video.embed_url!==playerUrl)await sql`UPDATE videos SET embed_url=${playerUrl},updated_at=NOW() WHERE id=${id} AND provider='doodstream' AND status='published'`;
-   related=await sql`SELECT id,title,thumbnail_url,type,year FROM videos WHERE provider='doodstream' AND status='published' AND id<>${id} ORDER BY published_at DESC NULLS LAST,created_at DESC LIMIT 8`;
+   related=(await sql`SELECT id,title,thumbnail_url,type,year FROM videos WHERE provider='doodstream' AND status='published' AND id<>${id} ORDER BY published_at DESC NULLS LAST,created_at DESC LIMIT 8`) as unknown as RelatedVideo[];
   }
  }catch(error){console.error("[watch]",error);loadError=true;}
  if(loadError)return <main className="content" style={{minHeight:"100vh",paddingTop:32}}><Link href="/" className="muted">← Kembali ke VIRALINDO</Link><h1>Video belum dapat dimuat</h1><p className="muted">Koneksi database atau layanan pemutar sedang bermasalah. Silakan coba lagi.</p></main>;
