@@ -17,7 +17,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
  if(loadError)return <main className="content" style={{minHeight:"100vh",paddingTop:32}}><Link href="/" className="muted">← Kembali ke VIRALINDO</Link><h1>Video belum dapat dimuat</h1><p className="muted">Koneksi database atau layanan pemutar sedang bermasalah. Silakan coba lagi.</p></main>;
  if(!video||!playerUrl)return <main className="content" style={{minHeight:"100vh",paddingTop:32}}><Link href="/" className="muted">← Kembali ke VIRALINDO</Link><h1>Video tidak ditemukan</h1><p className="muted">Video DoodStream ini belum dipublikasikan atau sudah tidak tersedia.</p></main>;
  return <main className="content" style={{minHeight:"100vh",paddingTop:24}}><Link href="/" className="muted">← Kembali ke VIRALINDO</Link><div style={{maxWidth:1100,margin:"24px auto"}}>
-  <div style={{aspectRatio:"16/9",background:"#000",borderRadius:14,overflow:"hidden"}}><VideoPlayer url={playerUrl} title={video.title} poster={video.thumbnail_url} type="embed"/></div>
+  <div style={{aspectRatio:"16/9",background:"#000",borderRadius:14,overflow:"hidden"}}><VideoPlayer url={playerUrl} title={video.title} type="embed"/></div>
   <h1 style={{font:"800 clamp(24px,4vw,38px) Manrope",marginBottom:8}}>{video.title}</h1><p className="muted">{[video.year,video.type].filter(Boolean).join(" · ")}</p>{video.description&&<p style={{lineHeight:1.7,color:"#d4d4d8",maxWidth:800}}>{video.description}</p>}
  </div></main>;
 }
