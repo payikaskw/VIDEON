@@ -17,7 +17,7 @@ a{color:inherit;text-decoration:none}
 .eyebrow{color:#fb7185;font-size:12px;letter-spacing:3px;font-weight:800;text-transform:uppercase}
 .hero h1{font:800 clamp(44px,8vw,86px)/.98 Manrope,sans-serif;letter-spacing:-4px;margin:16px 0}
 .hero p{color:#d4d4d8;line-height:1.7;max-width:520px}
-.primary-btn{display:inline-flex;align-items:center;gap:10px;background:#e11d48;color:white;border:0;border-radius:9px;padding:13px 19px;font-weight:700;margin-top:15px}
+.primary-btn{display:inline-flex;align-items:center;gap:10px;background:var(--red);color:white;border:0;border-radius:9px;padding:13px 19px;font-weight:700;margin-top:15px}
 .secondary-btn{display:inline-flex;align-items:center;gap:9px;background:#ffffff18;color:white;border:1px solid #ffffff20;border-radius:9px;padding:12px 17px;font-weight:600;margin:15px 0 0 9px}
 .content{padding:34px clamp(18px,5vw,72px) 80px}
 .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
@@ -25,7 +25,7 @@ a{color:inherit;text-decoration:none}
 .muted{color:var(--muted);font-size:13px}
 .pills{display:flex;gap:9px;overflow:auto;padding:4px 0 20px}
 .pill{border:1px solid #303038;background:#15151b;color:#d4d4d8;border-radius:999px;padding:9px 15px;white-space:nowrap;font-size:13px}
-.pill.active{background:#e11d48;border-color:#e11d48;color:white}
+.pill.active{background:var(--red);border-color:var(--red);color:white}
 .video-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:18px}
 .video-card{min-width:0}
 .poster{aspect-ratio:2/3;border-radius:12px;background:linear-gradient(145deg,#27272a,#18181b);overflow:hidden;position:relative;border:1px solid #ffffff0d}
@@ -42,7 +42,7 @@ a{color:inherit;text-decoration:none}
 .field{display:grid;gap:7px;margin:17px 0}
 .field label{font-size:13px;color:#d4d4d8}
 .field input{width:100%;background:#09090b;border:1px solid #3f3f46;border-radius:9px;padding:12px;color:white;outline:none}
-.field input:focus{border-color:#e11d48}
+.field input:focus{border-color:var(--red)}
 .error{color:#fda4af;font-size:13px}
 @media(max-width:1000px){.video-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:700px){.hero{min-height:520px;padding-bottom:45px}.hero h1{letter-spacing:-2px}.video-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.content{padding-top:25px}.header-note{display:none}.footer{gap:12px;flex-direction:column}}
