@@ -30,7 +30,7 @@ The admin dashboard supports automatic catalog import and status checks. The exi
 The admin settings page controls brand name, tagline, homepage hero text, catalogue title, categories, footer text, and accent color. Settings are stored in Neon.
 
 ## Deploy
-Configure the environment variables above in Vercel, then deploy the main branch. No database schema change is required for switching new catalogue entries to DoodStream.
+Configure the environment variables above in Vercel, then deploy the main branch. Run `db/migrations/003_doodstream_only.sql` once against the production Neon database. This sets DoodStream as the database default and hides any previously published non-DoodStream entries. Historical VidHold migration files are retained only as migration history; no active application route or playback code uses VidHold.
 
 ## Important
 Only publish videos you own or are authorized to distribute. DoodStream playback and retention depend on the provider's account, processing state and current policies.
