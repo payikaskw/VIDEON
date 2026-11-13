@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/auth";
 import { getDb } from "@/lib/db";
-import { vidholdFileInfo, vidholdFileList, validFileCode } from "@/lib/vidhold";
+import { vidholdDirectLink, vidholdFileInfo, vidholdFileList, validFileCode } from "@/lib/vidhold";
 
 export const runtime = "nodejs";
 const schema = z.object({ fileCode: z.string().min(4).max(80) });
@@ -60,13 +60,13 @@ export async function POST(req: Request) {
       }
     }
 
-    const rawStatus = statusOf(file);
+    let directResult: RecordValue = {};\n    try { directResult = asRecord((await vidholdDirectLink(fileCode)).result); } catch (error) { console.error("[vidhold/direct-link]", error); }\n    const versions = Array.isArray(directResult.versions) ? directResult.versions.map(asRecord) : [];\n    const directMp4 = str(...versions.filter(v => ["h", "n", "l", "o"].includes(String(v.name || ""))).map(v => v.url));\n    const hlsUrl = str(directResult.hls_direct);\n    const rawStatus = statusOf(file);
     const canPlay = [1, "1", true, "true"].includes(file.canplay as never) ||
       [1, "1", true, "true"].includes(file.can_play as never);
     const ready = canPlay || ["ready", "active", "complete", "completed", "ok", "success", "published"].includes(rawStatus);
     const failed = ["failed", "error", "deleted", "removed"].includes(rawStatus);
     const status = ready ? "published" : failed ? "failed" : "processing";
-    const playerUrl = getUrl(file);
+    const playerUrl = directMp4 || hlsUrl || getUrl(file);
     const sql = getDb();
 
     await sql`
@@ -86,7 +86,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       ok: true, fileCode, status, providerStatus: rawStatus || "unknown",
-      playerReady: Boolean(playerUrl), foundInFileList: listMatched,
+      playerReady: Boolean(playerUrl), directLinkFound: Boolean(directMp4 || hlsUrl), playbackType: directMp4 ? "mp4" : hlsUrl ? "hls" : "share-page", foundInFileList: listMatched,
       infoFields: Object.keys(file).slice(0, 30),
       message: playerUrl ? "Alamat player ditemukan." : "VidHold belum mengembalikan field alamat player pada respons file info/list."
     });
