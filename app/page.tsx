@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Play, Search, Film, Clapperboard, Sparkles } from "lucide-react";
 
 type Video = { id:string; title:string; description:string|null; thumbnail_url:string|null; category_name:string|null; year:number|null; type:string };
@@ -12,8 +12,8 @@ export default function HomePage(){
   const [loading,setLoading]=useState(true);
   useEffect(()=>{fetch("/api/videos").then(r=>r.ok?r.json():{videos:[]}).then(d=>setVideos(d.videos||[])).catch(()=>setVideos([])).finally(()=>setLoading(false));},[]);
   const filtered=videos.filter(v=>(category==="Semua"||v.type?.toLowerCase()===category.toLowerCase()||v.category_name?.toLowerCase()===category.toLowerCase())&&v.title.toLowerCase().includes(query.toLowerCase()));
-  let taps=0; let tapTimer:ReturnType<typeof setTimeout>;
-  function logoTap(){taps++;clearTimeout(tapTimer);tapTimer=setTimeout(()=>{taps=0},1200);if(taps>=6){taps=0;window.location.href="/admin";}}
+  const tapCount=useRef(0); const tapTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
+  function logoTap(){tapCount.current++;if(tapTimer.current)clearTimeout(tapTimer.current);tapTimer.current=setTimeout(()=>{tapCount.current=0},1200);if(tapCount.current>=6){tapCount.current=0;window.location.href="/admin";}}
   return <main>
     <header className="site-header"><button className="brand" onClick={logoTap} aria-label="VIDEON"><span className="brand-mark"><Play size={17} fill="white"/></span>VIDEON</button><div className="header-note">WATCH EVERYTHING. ANYTIME.</div><a href="#koleksi" aria-label="Lihat koleksi"><Search size={20}/></a></header>
     <section className="hero"><div className="hero-content"><div className="eyebrow">Your next watch starts here</div><h1>EVERY STORY.<br/>ONE PLACE.</h1><p>Temukan film, serial, anime, dokumenter, dan video pilihan. Pilih tontonanmu dan nikmati ceritanya.</p><a className="primary-btn" href="#koleksi"><Play size={17} fill="white"/>Jelajahi video</a><a className="secondary-btn" href="#koleksi"><Clapperboard size={17}/>Lihat koleksi</a></div></section>
