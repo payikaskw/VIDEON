@@ -60,7 +60,11 @@ export async function POST(req: Request) {
       }
     }
 
-    let directResult: RecordValue = {};\n    try { directResult = asRecord((await vidholdDirectLink(fileCode)).result); } catch (error) { console.error("[vidhold/direct-link]", error); }\n    const versions = Array.isArray(directResult.versions) ? directResult.versions.map(asRecord) : [];\n    const directMp4 = str(...versions.filter(v => ["h", "n", "l", "o"].includes(String(v.name || ""))).map(v => v.url));\n    const hlsUrl = str(directResult.hls_direct);\n    const rawStatus = statusOf(file);
+    let directResult: RecordValue = {};
+    try { directResult = asRecord((await vidholdDirectLink(fileCode)).result); } catch (error) { console.error("[vidhold/direct-link]", error); }
+    const versions = Array.isArray(directResult.versions) ? directResult.versions.map(asRecord) : [];
+    const directMp4 = str(...versions.filter(v => ["h", "n", "l", "o"].includes(String(v.name || ""))).map(v => v.url));
+    const hlsUrl = str(directResult.hls_direct);\n    const rawStatus = statusOf(file);
     const canPlay = [1, "1", true, "true"].includes(file.canplay as never) ||
       [1, "1", true, "true"].includes(file.can_play as never);
     const ready = canPlay || ["ready", "active", "complete", "completed", "ok", "success", "published"].includes(rawStatus);
