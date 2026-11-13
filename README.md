@@ -26,9 +26,6 @@ Streaming catalogue for films, series and general video. Public viewers do not n
 
 The admin dashboard supports automatic catalog import and status checks. The existing upload worker sends local video files to DoodStream; the remote-upload endpoint sends public HTTPS video URLs to DoodStream. Removing a video from VIRALINDO only removes its catalogue record, not the original file in DoodStream.
 
-## Legacy VidHold entries
-Previously imported VidHold records remain in the database and retain their legacy playback path. New synchronization, local uploads, remote uploads and newly imported catalogue entries use DoodStream. Existing videos are not copied from VidHold to DoodStream automatically; they must be uploaded or remotely imported into DoodStream before they can use the new player.
-
 ## Admin UI settings
 The admin settings page controls brand name, tagline, homepage hero text, catalogue title, categories, footer text, and accent color. Settings are stored in Neon.
 
