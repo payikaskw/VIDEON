@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/admin/vidhold/sync",
+      "path": "/api/admin/dood/sync",
       "schedule": "0 0 * * *"
     }
   ]

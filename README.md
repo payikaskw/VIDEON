@@ -5,28 +5,35 @@ Streaming catalogue for films, series and general video. Public viewers do not n
 ## Stack
 - Next.js App Router + TypeScript
 - Neon PostgreSQL
-- VidHold API catalog synchronization
+- DoodStream API for video hosting, uploads, playback and catalog synchronization
 - Vercel deployment
 
 ## Environment variables
 - `DATABASE_URL`: Neon PostgreSQL connection string.
-- `VIDHOLD_API_KEY`: VidHold API key (server-side only).
+- `DOODSTREAM_API_KEY`: DoodStream API key (server-side only; add it to Vercel and the upload worker).
 - `ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH`, `ADMIN_JWT_SECRET`: admin authentication.
-- `CRON_SECRET`: random secret used to authorize the scheduled catalog sync endpoint.
+- `CRON_SECRET`: random secret used to authorize scheduled catalog synchronization.
+- `VIDEO_WORKER_URL` and `UPLOAD_WORKER_SECRET`: required for browser-to-worker local uploads.
+- `APP_ORIGIN`: set on the upload worker to the production VIRALINDO origin.
 
-## Database
-For an existing deployment, run `db/migrations/002_vidhold_auto_catalog.sql` once in the Neon SQL Editor. For a fresh database, run `db/schema.sql` followed by the migration.
+## DoodStream setup
+1. Create or sign in to a DoodStream account and copy its API key from account settings.
+2. Add `DOODSTREAM_API_KEY` in Vercel Project Settings → Environment Variables for Production, Preview and Development as needed.
+3. Add the same `DOODSTREAM_API_KEY` to the upload worker environment. Keep the key private; never expose it in browser code.
+4. Redeploy VIRALINDO and the upload worker after setting the key.
+5. Upload videos to DoodStream, then open the VIRALINDO admin dashboard and run **Sinkronkan video DoodStream**. Files that DoodStream reports as playable are published; files still encoding remain in processing.
+6. The admin dashboard refreshes catalog/status while it is open. The Vercel cron endpoint also performs scheduled synchronization; actual schedule frequency depends on the Vercel plan.
 
-## VidHold automatic catalog
-Upload videos in the VidHold account as usual. VIRALINDO reads the account catalog through VidHold `/api/file/list`, stores new file codes and metadata in Neon, and checks processing status through `/api/file/info`. The admin dashboard also syncs automatically while it is open and offers a manual sync action. The Vercel scheduled job is configured in `vercel.json`; its frequency depends on the Vercel plan. On Vercel Hobby, scheduled jobs can run only once per day, while an open admin dashboard checks every minute.
+The admin dashboard supports automatic catalog import and status checks. The existing upload worker sends local video files to DoodStream; the remote-upload endpoint sends public HTTPS video URLs to DoodStream. Removing a video from VIRALINDO only removes its catalogue record, not the original file in DoodStream.
 
-The admin dashboard does not provide local video upload or URL-import forms. Admin actions only hide, restore, or remove entries from the VIRALINDO catalog. Removing an entry from VIRALINDO does not delete the original VidHold file.
+## Legacy VidHold entries
+Previously imported VidHold records remain in the database and retain their legacy playback path. New synchronization, local uploads, remote uploads and newly imported catalogue entries use DoodStream. Existing videos are not copied from VidHold to DoodStream automatically; they must be uploaded or remotely imported into DoodStream before they can use the new player.
 
 ## Admin UI settings
 The admin settings page controls brand name, tagline, homepage hero text, catalogue title, categories, footer text, and accent color. Settings are stored in Neon.
 
 ## Deploy
-Import this repository into Vercel and configure the environment variables above. Run the database migration in Neon, then deploy.
+Configure the environment variables above in Vercel, then deploy the main branch. No database schema change is required for switching new catalogue entries to DoodStream.
 
 ## Important
-Only publish videos you own or are authorized to distribute. VidHold processing and player availability depend on the provider's current API and account limits.
+Only publish videos you own or are authorized to distribute. DoodStream playback and retention depend on the provider's account, processing state and current policies.
