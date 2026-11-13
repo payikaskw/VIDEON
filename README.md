@@ -5,7 +5,7 @@ Streaming catalogue for films, series and general video. Public viewers do not n
 ## Stack
 - Next.js App Router + TypeScript
 - Neon PostgreSQL
-- DoodStream API
+- Vidhold remote URL import API
 - Vercel deployment
 
 ## Local setup
@@ -26,4 +26,4 @@ Official docs: https://vidhold.com/api-docs
 Import this repository into Vercel, add the environment variables, run the SQL schema in Neon, then deploy.
 
 ## Important
-Only publish videos you own or are authorized to distribute. DoodStream embeds may include provider-controlled ads and playback behavior.
+Only publish videos you own or are authorized to distribute. Vidhold processing and player availability depend on the provider's current API and account limits.
