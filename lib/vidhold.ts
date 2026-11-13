@@ -45,7 +45,8 @@ export function validatePublicVideoUrl(value: string) {
 async function request<T>(path: string, params: Record<string, string>, method: "GET" | "POST" = "GET") {
   const url = new URL(`${BASE_URL}/${path.replace(/^\/+/, "")}`);
   const key = getKey();
-  const headers: Record<string, string> = { Accept: "application/json" };\n  const options: RequestInit = { method, cache: "no-store", signal: AbortSignal.timeout(25_000), headers };
+  const headers: Record<string, string> = { Accept: "application/json" };
+  const options: RequestInit = { method, cache: "no-store", signal: AbortSignal.timeout(25_000), headers };
   if (method === "GET") {
     url.searchParams.set("key", key);
     for (const [name, value] of Object.entries(params)) url.searchParams.set(name, value);
