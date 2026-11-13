@@ -64,7 +64,8 @@ export async function POST(req: Request) {
     try { directResult = asRecord((await vidholdDirectLink(fileCode)).result); } catch (error) { console.error("[vidhold/direct-link]", error); }
     const versions = Array.isArray(directResult.versions) ? directResult.versions.map(asRecord) : [];
     const directMp4 = str(...versions.filter(v => ["h", "n", "l", "o"].includes(String(v.name || ""))).map(v => v.url));
-    const hlsUrl = str(directResult.hls_direct);\n    const rawStatus = statusOf(file);
+    const hlsUrl = str(directResult.hls_direct);
+    const rawStatus = statusOf(file);
     const canPlay = [1, "1", true, "true"].includes(file.canplay as never) ||
       [1, "1", true, "true"].includes(file.can_play as never);
     const ready = canPlay || ["ready", "active", "complete", "completed", "ok", "success", "published"].includes(rawStatus);
