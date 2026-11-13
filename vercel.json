@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/admin/vidhold/sync",
+      "schedule": "0 0 * * *"
+    }
+  ]
+}
