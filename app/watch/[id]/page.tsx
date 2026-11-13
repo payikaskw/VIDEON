@@ -12,7 +12,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
   let loadError = false;
   try {
     const sql = getDb();
-    const rows = await sql`SELECT id,title,description,embed_url,thumbnail_url,year,type,provider_file_code,status FROM videos WHERE id=${id} AND status='published' LIMIT 1`;
+    const rows = await sql`SELECT id,title,description,embed_url,source_url,thumbnail_url,year,type,provider_file_code,status FROM videos WHERE id=${id} AND status='published' LIMIT 1`;
     video = rows[0] || null;
   } catch {
     loadError = true;
@@ -25,7 +25,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
     return <main className="content" style={{ minHeight: "100vh", paddingTop: 32 }}><Link href="/" className="muted">← Kembali ke VIRALINDO</Link><h1>Video tidak ditemukan</h1><p className="muted">Video ini belum dipublikasikan atau sudah tidak tersedia.</p></main>;
   }
 
-  const rawPlayerUrl = typeof video.embed_url === "string" ? video.embed_url.trim() : "";
+  const rawPlayerUrl = typeof video.embed_url === "string" && video.embed_url.trim() ? video.embed_url.trim() : (typeof video.source_url === "string" ? video.source_url.trim() : "");
   let playerUrl = "";
   try {
     const parsed = new URL(rawPlayerUrl);
