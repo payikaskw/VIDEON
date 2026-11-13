@@ -23,12 +23,28 @@ function str(...values: unknown[]): string | null {
   for (const value of values) if (typeof value === "string" && value.trim()) return value.trim();
   return null;
 }
+function safePlayerUrl(value: unknown): string | null {
+  if (typeof value !== "string" || !value.trim()) return null;
+  try {
+    const url = new URL(value.trim());
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+    url.protocol = "https:";
+    return url.toString();
+  } catch { return null; }
+}
+function firstPlayerUrl(...values: unknown[]): string | null {
+  for (const value of values) {
+    const url = safePlayerUrl(value);
+    if (url) return url;
+  }
+  return null;
+}
 function getUrl(file: RecordValue): string | null {
-  const direct = str(file.embed_url, file.embed, file.player_url, file.player, file.link, file.file_url, file.view_url, file.url);
+  const direct = firstPlayerUrl(file.embed_url, file.embed, file.player_url, file.player, file.link, file.file_url, file.view_url, file.url);
   if (direct) return direct;
   for (const key of ["result", "data", "file", "info"]) {
     const nested = asRecord(file[key]);
-    const found = str(nested.embed_url, nested.embed, nested.player_url, nested.player, nested.link, nested.file_url, nested.view_url, nested.url);
+    const found = firstPlayerUrl(nested.embed_url, nested.embed, nested.player_url, nested.player, nested.link, nested.file_url, nested.view_url, nested.url);
     if (found) return found;
   }
   return null;
@@ -64,8 +80,8 @@ export async function POST(req: Request) {
     let directLinkError: string | null = null;
     try { directResult = asRecord((await vidholdDirectLink(fileCode)).result); } catch (error) { directLinkError = error instanceof Error ? error.message : "Direct link API gagal"; console.error("[vidhold/direct-link]", directLinkError); }
     const versions = Array.isArray(directResult.versions) ? directResult.versions.map(asRecord) : [];
-    const directMp4 = str(...versions.filter(v => ["h", "n", "l", "o"].includes(String(v.name || ""))).map(v => v.url));
-    const hlsUrl = str(directResult.hls_direct);
+    const directMp4 = firstPlayerUrl(...versions.filter(v => ["h", "n", "l", "o"].includes(String(v.name || ""))).map(v => v.url));
+    const hlsUrl = firstPlayerUrl(directResult.hls_direct);
     const rawStatus = statusOf(file);
     const canPlay = [1, "1", true, "true"].includes(file.canplay as never) ||
       [1, "1", true, "true"].includes(file.can_play as never);
@@ -78,7 +94,7 @@ export async function POST(req: Request) {
     await sql`
       UPDATE videos SET
         status=${status},
-        embed_url=COALESCE(${playerUrl}, source_url, embed_url),
+        embed_url=COALESCE(${playerUrl}, embed_url, source_url),
         published_at=CASE WHEN ${ready} THEN COALESCE(published_at,NOW()) ELSE published_at END,
         updated_at=NOW()
       WHERE provider='vidhold' AND provider_file_code=${fileCode}
