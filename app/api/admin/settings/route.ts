@@ -18,14 +18,11 @@ const schema = z.object({
 });
 
 export async function GET() {
-  if (!await getAdminSession()) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+  if (!await getAdminSession()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const sql = getDb();
     const rows = await sql`SELECT key, value FROM site_settings WHERE key = 'site_ui' LIMIT 1`;
-    return NextResponse.json({ settings: rows[0]?.value || {} });
+    return NextResponse.json({ settings: { ...(rows[0]?.value || {}), brandName: "VIRALINDO" } });
   } catch (error) {
     console.error("[admin/settings] Gagal membaca:", error);
     return NextResponse.json({ error: "Gagal membaca pengaturan." }, { status: 500 });
@@ -33,16 +30,10 @@ export async function GET() {
 }
 
 export async function PUT(req: Request) {
-  if (!await getAdminSession()) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+  if (!await getAdminSession()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Format data pengaturan tidak valid." }, { status: 400 });
-  }
+  try { body = await req.json(); }
+  catch { return NextResponse.json({ error: "Format data pengaturan tidak valid." }, { status: 400 }); }
 
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
@@ -54,30 +45,20 @@ export async function PUT(req: Request) {
 
   try {
     const sql = getDb();
-    const data = parsed.data;
-
-    // UI settings are stored as one JSON document. Do not couple this save
-    // to the separate video-category catalog: category sync failures there
-    // previously caused the entire settings form to report a false failure.
+    const data = { ...parsed.data, brandName: "VIRALINDO" };
     const rows = await sql`
       INSERT INTO site_settings (key, value, updated_at)
       VALUES ('site_ui', ${JSON.stringify(data)}::jsonb, NOW())
-      ON CONFLICT (key)
-      DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()
+      ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()
       RETURNING key
     `;
-
-    if (!rows.length) {
-      throw new Error("Database tidak mengonfirmasi penyimpanan pengaturan.");
-    }
-
+    if (!rows.length) throw new Error("Database tidak mengonfirmasi penyimpanan pengaturan.");
     return NextResponse.json({ ok: true, settings: data });
   } catch (error) {
     console.error("[admin/settings] Gagal menyimpan:", error);
-    const detail = error instanceof Error ? error.message : "Unknown database error";
     return NextResponse.json({
       error: "Gagal menyimpan pengaturan.",
-      detail: process.env.NODE_ENV === "production" ? "Periksa log fungsi admin/settings di Vercel." : detail,
+      detail: process.env.NODE_ENV === "production" ? "Periksa log fungsi admin/settings di Vercel." : (error instanceof Error ? error.message : "Unknown database error"),
     }, { status: 500 });
   }
 }
