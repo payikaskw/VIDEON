@@ -23,7 +23,7 @@ export function validatePublicVideoUrl(value: string) {
   let url: URL;
   try { url = new URL(value); } catch { throw new Error("URL video tidak valid."); }
   if (url.protocol !== "https:" || url.username || url.password) throw new Error("Gunakan URL HTTPS publik tanpa username atau password.");
-  const host = url.hostname.toLowerCase().replace(/^\\[|\\]$/g, "");
+  const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, "");
   if (!host || host === "localhost" || host.endsWith(".localhost") || host.endsWith(".local")) throw new Error("Host lokal tidak diizinkan.");
   const ipVersion = isIP(host);
   if (ipVersion === 4 && isPrivateIpv4(host)) throw new Error("Alamat IP privat tidak diizinkan.");
@@ -32,7 +32,7 @@ export function validatePublicVideoUrl(value: string) {
 }
 
 async function request<T>(path: string, params: Record<string, string>, method: "GET" | "POST" = "GET") {
-  const url = new URL(`${BASE_URL}/${path.replace(/^\\/+/, "")}`);
+  const url = new URL(`${BASE_URL}/${path.replace(/^\/+/, "")}`);
   const key = getKey();
   const headers: Record<string, string> = { Accept: "application/json" };
   const options: RequestInit = { method, cache: "no-store", signal: AbortSignal.timeout(25_000), headers };
