@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getDb } from "@/lib/db";
-import { vidholdDirectLink, vidholdFileInfo, vidholdFileList } from "@/lib/vidhold";
+import { vidholdFileInfo, vidholdFileList } from "@/lib/vidhold";
 export const dynamic = "force-dynamic";
 
 type Rec = Record<string, unknown>;
@@ -34,11 +34,11 @@ function safeUrl(value: unknown): string {
   } catch { return ""; }
 }
 function fileUrl(file: Rec): string {
-  const direct = firstSafeUrl(file.embed_url, file.embed, file.player_url, file.player, file.link, file.file_url, file.view_url, file.url);
+  const direct = firstSafeUrl(file.embed_url, file.embed, file.player_url, file.player, file.link, file.file_url, file.view_url, file.url, file.download_url);
   if (direct) return direct;
   for (const key of ["result", "data", "file", "info"]) {
     const nested = rec(file[key]);
-    const found = firstSafeUrl(nested.embed_url, nested.embed, nested.player_url, nested.player, nested.link, nested.file_url, nested.view_url, nested.url);
+    const found = firstSafeUrl(nested.embed_url, nested.embed, nested.player_url, nested.player, nested.link, nested.file_url, nested.view_url, nested.url, nested.download_url);
     if (found) return found;
   }
   return "";
@@ -48,14 +48,6 @@ async function resolveVidHoldPlayback(fileCode: string): Promise<string> {
   try {
     const result = await vidholdFileInfo(fileCode);
     info = rows(result.result).find(x => text(x.file_code, x.filecode, x.file_code_id) === fileCode) || rows(result.result)[0] || {};
-  } catch {}
-  try {
-    const direct = rec((await vidholdDirectLink(fileCode)).result);
-    const versions = Array.isArray(direct.versions) ? direct.versions.map(rec) : [];
-    const mp4 = versions.find(v => ["h", "n", "l", "o"].includes(String(v.name || "")) && safeUrl(v.url));
-    if (mp4) return safeUrl(mp4.url);
-    const hls = safeUrl(direct.hls_direct);
-    if (hls) return hls;
   } catch {}
   const fromInfo = fileUrl(info);
   if (fromInfo) return fromInfo;
