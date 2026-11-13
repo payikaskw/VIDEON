@@ -61,7 +61,8 @@ export async function POST(req: Request) {
     }
 
     let directResult: RecordValue = {};
-    try { directResult = asRecord((await vidholdDirectLink(fileCode)).result); } catch (error) { console.error("[vidhold/direct-link]", error); }
+    let directLinkError: string | null = null;
+    try { directResult = asRecord((await vidholdDirectLink(fileCode)).result); } catch (error) { directLinkError = error instanceof Error ? error.message : "Direct link API gagal"; console.error("[vidhold/direct-link]", directLinkError); }
     const versions = Array.isArray(directResult.versions) ? directResult.versions.map(asRecord) : [];
     const directMp4 = str(...versions.filter(v => ["h", "n", "l", "o"].includes(String(v.name || ""))).map(v => v.url));
     const hlsUrl = str(directResult.hls_direct);
@@ -93,7 +94,11 @@ export async function POST(req: Request) {
       ok: true, fileCode, status, providerStatus: rawStatus || "unknown",
       playerReady: Boolean(playerUrl), directLinkFound: Boolean(directMp4 || hlsUrl), playbackType: directMp4 ? "mp4" : hlsUrl ? "hls" : "share-page", foundInFileList: listMatched,
       infoFields: Object.keys(file).slice(0, 30),
-      message: playerUrl ? "Alamat player ditemukan." : "VidHold belum mengembalikan field alamat player pada respons file info/list."
+      directLinkFields: Object.keys(directResult).slice(0, 30),
+      directLinkError,
+      hasHls: Boolean(hlsUrl),
+      versionCount: versions.length,
+      message: playerUrl ? "Alamat player ditemukan." : directLinkError || "API VidHold merespons tanpa URL streaming. Periksa dukungan direct_link dan status encoding pada akun VidHold."
     });
   } catch (error) {
     console.error("[vidhold/status]", error);
