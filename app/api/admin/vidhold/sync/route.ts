@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { getAdminSession } from "@/lib/auth";
 import { getDb } from "@/lib/db";
-import { vidholdExtractPlaybackUrl, vidholdFileList } from "@/lib/vidhold";
+import { vidholdExtractPlaybackUrl, vidholdFileList, vidholdPlayerPageUrl } from "@/lib/vidhold";
 
 export const runtime = "nodejs";
 
@@ -26,7 +26,7 @@ async function synchronize() {
       scanned++;
       const title = String(file.title || file.file_title || ("Video " + code)).trim().slice(0, 180) || ("Video " + code);
       const thumb = typeof file.thumbnail === "string" ? file.thumbnail : (typeof file.player_img === "string" ? file.player_img : null);
-      const playbackUrl = vidholdExtractPlaybackUrl(file);
+      const playbackUrl = vidholdExtractPlaybackUrl(file) || vidholdPlayerPageUrl(code);
       const ready = providerReady(file) && Boolean(playbackUrl);
       if (ready) playable++; else waitingForPlayer++;
       const status = ready ? "published" : "processing";

@@ -53,8 +53,9 @@ async function request<T>(path: string, params: Record<string, string>, method: 
 export async function vidholdAccount() { return request("account/info", {}); }
 export async function vidholdRemoteImport(sourceUrl: string) { return request<{ filecode?: string }>("upload/url", { url: sourceUrl }, "POST"); }
 export async function vidholdFileInfo(fileCode: string) { return request<Rec>("file/info", { file_code: fileCode }); }
-export async function vidholdFileDirectLink(fileCode: string) {
-  return request<Rec>("file/direct_link", { file_code: fileCode, hls: "1" });
+/** VidHold share/player page. The documented API does not expose file/direct_link. */
+export function vidholdPlayerPageUrl(fileCode: string) {
+  return `https://vidhold.com/d/${encodeURIComponent(validFileCode(fileCode))}`;
 }
 export async function vidholdFileList(page = 1, perPage = 100) {
   return request<{ files?: Array<Rec>; results_total?: number; pages?: number; total?: number }>("file/list", { page: String(page), per_page: String(perPage) });
@@ -143,24 +144,21 @@ export async function vidholdResolvePlayback(fileCode: string) {
   let info: Rec = {};
   let listed: Rec = {};
   let direct: Rec = {};
-  let directLinkError: string | null = null;
+  const directLinkError: string | null = null;
   try {
     const response = await vidholdFileInfo(fileCode);
     const candidates = listRecords(response.result);
     info = candidates.find((item) => String(item.file_code || item.filecode || item.file_code_id || "") === fileCode) || candidates[0] || {};
   } catch {}
   try {
-    const response = await vidholdFileDirectLink(fileCode);
-    direct = asRecord(response.result);
-  } catch (error) {
-    directLinkError = error instanceof Error ? error.message : "Gagal meminta direct link VidHold.";
-  }
-  try {
     const response = await vidholdFileList(1, 100);
     const candidates = listRecords(response.result);
     listed = candidates.find((item) => String(item.file_code || item.filecode || item.file_code_id || item.code || "") === fileCode) || {};
   } catch {}
-  const url = vidholdExtractPlaybackUrl(direct, info, listed);
+  // Prefer a real stream/embed returned by VidHold. If unavailable, use the
+  // provider page that the owner confirmed plays successfully; never call the
+  // undocumented /file/direct_link endpoint (it returns HTTP 404).
+  const url = vidholdExtractPlaybackUrl(direct, info, listed) || vidholdPlayerPageUrl(fileCode);
   return {
     url,
     type: vidholdPlaybackType(url),
