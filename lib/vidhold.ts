@@ -53,7 +53,6 @@ async function request<T>(path: string, params: Record<string, string>, method: 
 export async function vidholdAccount() { return request("account/info", {}); }
 export async function vidholdRemoteImport(sourceUrl: string) { return request<{ filecode?: string }>("upload/url", { url: sourceUrl }, "POST"); }
 export async function vidholdFileInfo(fileCode: string) { return request<Record<string, unknown>>("file/info", { file_code: fileCode }); }
-export async function vidholdDirectLink(fileCode: string) { return request<Record<string, unknown>>("file/direct_link", { file_code: fileCode, q: "h", hls: "1" }); }
 export async function vidholdFileList(page = 1, perPage = 100) {
   return request<{ files?: Array<Record<string, unknown>>; results_total?: number; pages?: number; total?: number }>("file/list", { page: String(page), per_page: String(perPage) });
 }
