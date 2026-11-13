@@ -1,0 +1,26 @@
+"use client";
+import { useEffect, useState } from "react";
+import { Play, Search, Film, Clapperboard, Sparkles } from "lucide-react";
+
+type Video = { id:string; title:string; description:string|null; thumbnail_url:string|null; category_name:string|null; year:number|null; type:string };
+const categories = ["Semua","Film","Serial","Anime","Dokumenter","Hiburan","Video"];
+
+export default function HomePage(){
+  const [videos,setVideos]=useState<Video[]>([]);
+  const [category,setCategory]=useState("Semua");
+  const [query,setQuery]=useState("");
+  const [loading,setLoading]=useState(true);
+  useEffect(()=>{fetch("/api/videos").then(r=>r.ok?r.json():{videos:[]}).then(d=>setVideos(d.videos||[])).catch(()=>setVideos([])).finally(()=>setLoading(false));},[]);
+  const filtered=videos.filter(v=>(category==="Semua"||v.type?.toLowerCase()===category.toLowerCase()||v.category_name?.toLowerCase()===category.toLowerCase())&&v.title.toLowerCase().includes(query.toLowerCase()));
+  let taps=0; let tapTimer:ReturnType<typeof setTimeout>;
+  function logoTap(){taps++;clearTimeout(tapTimer);tapTimer=setTimeout(()=>{taps=0},1200);if(taps>=6){taps=0;window.location.href="/admin";}}
+  return <main>
+    <header className="site-header"><button className="brand" onClick={logoTap} aria-label="VIDEON"><span className="brand-mark"><Play size={17} fill="white"/></span>VIDEON</button><div className="header-note">WATCH EVERYTHING. ANYTIME.</div><a href="#koleksi" aria-label="Lihat koleksi"><Search size={20}/></a></header>
+    <section className="hero"><div className="hero-content"><div className="eyebrow">Your next watch starts here</div><h1>EVERY STORY.<br/>ONE PLACE.</h1><p>Temukan film, serial, anime, dokumenter, dan video pilihan. Pilih tontonanmu dan nikmati ceritanya.</p><a className="primary-btn" href="#koleksi"><Play size={17} fill="white"/>Jelajahi video</a><a className="secondary-btn" href="#koleksi"><Clapperboard size={17}/>Lihat koleksi</a></div></section>
+    <section className="content" id="koleksi"><div className="section-head"><div><div className="eyebrow">Discover</div><h2>Pilihan untuk ditonton</h2></div><span className="muted">{videos.length} video</span></div>
+      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}><div style={{position:"relative",flex:1,maxWidth:420}}><Search size={17} style={{position:"absolute",left:13,top:13,color:"#a1a1aa"}}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Cari judul video..." style={{width:"100%",background:"#15151b",border:"1px solid #303038",borderRadius:10,padding:"11px 12px 11px 40px",color:"white"}}/></div></div>
+      <div className="pills">{categories.map(c=><button key={c} className={"pill "+(category===c?"active":"")} onClick={()=>setCategory(c)}>{c}</button>)}</div>
+      {loading?<div className="empty">Memuat koleksi VIDEON...</div>:filtered.length===0?<div className="empty"><Film size={28}/><p>Belum ada video yang dipublikasikan.</p><span className="muted">Konten yang ditambahkan admin akan muncul di sini.</span></div>:<div className="video-grid">{filtered.map(v=><article className="video-card" key={v.id}><a href={"/watch/"+v.id}><div className="poster">{v.thumbnail_url?<img src={v.thumbnail_url} alt={v.title}/>:<div className="poster-placeholder"><Film size={42}/></div>}</div><h3>{v.title}</h3><div className="meta">{[v.year,v.category_name||v.type].filter(Boolean).join(" · ")}</div></a></article>)}</div>}
+    </section><footer className="footer"><span>© {new Date().getFullYear()} VIDEON</span><span>Watch responsibly. Only authorized content.</span></footer>
+  </main>;
+}
