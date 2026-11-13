@@ -14,7 +14,7 @@ export async function POST(req:Request){
   if(source.protocol!=="https:"||!source.hostname||source.hostname==="localhost"||source.hostname.endsWith(".local")||/^127\.|^10\.|^192\.168\.|^169\.254\./.test(source.hostname))return NextResponse.json({error:"Gunakan direct video URL HTTPS publik."},{status:400});
   const data=await doodGet("upload/url",{url:parsed.data.url,new_title:parsed.data.title});
   const fileCode=data.result?.filecode;if(!fileCode)throw new Error("DoodStream tidak mengembalikan filecode.");
-  const sql=getDb();const slug=parsed.data.title.toLowerCase().normalize("NFKD").replace(/[\\u0300-\\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,160)+"-"+randomUUID().slice(0,8);
+  const sql=getDb();const slug=parsed.data.title.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,160)+"-"+randomUUID().slice(0,8);
   const embedUrl=getDoodEmbed(fileCode);
   await sql`INSERT INTO videos (title,slug,provider,provider_file_code,embed_url,source_url,status,type) VALUES (${parsed.data.title},${slug},'doodstream',${fileCode},${embedUrl},${parsed.data.url},'processing','video') ON CONFLICT (slug) DO NOTHING`;
   await sql`INSERT INTO upload_jobs (provider,file_code,source_url,title,status) VALUES ('doodstream',${fileCode},${parsed.data.url},${parsed.data.title},'queued') ON CONFLICT (file_code) DO NOTHING`;
